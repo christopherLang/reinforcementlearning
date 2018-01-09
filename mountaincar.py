@@ -1,114 +1,62 @@
 import gym
-import numpy as np
+import sys
+import os
+from tqdm import tqdm
+
+os.chdir('/home/chlang/Desktop/reinforcementlearning')
+sys.path.append('lib')
+
+from reilearn import SDTDL, DiscreteParameter
 
 env = gym.make('MountainCar-v0')
 
-# Possible states:
-# [0] position: -1.2 - 0.6
-# [1] velicity: -0.07 - 0.07
+vel_param = DiscreteParameter(env.observation_space.low[0],
+                              env.observation_space.high[0],
+                              20)
 
-# To create a set of discrete possible states, split position/velocity into
-# categorical, and create pair-wise combinations
-nsteps = 5
-pos_brks = np.round(np.linspace(-1.2, 0.6, nsteps), 2)
+agent = SDTDL(vel_param, env.action_space.n, lrate=0.80, drate=0.2)
 
-q = (
-    np.array(np.meshgrid(pos_brks, [0, 1, 2], [0])).T.
-    reshape(nsteps * 3, 3)
-)
+max_epi = 100000
+for i_episode in tqdm(range(max_epi), ncols=80):
+    agent.new_episode()
 
-gamma = 0.9
+    obs_1 = env.reset()[0]
+    action_num = agent.action(obs_1)
 
-def update_q(position, action, reward, gamma):
-    # for current state
-    position = np.round(position, 2)
-    # velocity = np.round(velocity, 2)
+    done = False
 
-    cat_pos = np.digitize(position, pos_brks) - 1
-    # vel_pos = np.digitize(velocity, vel_brks) - 1
+    while done is not True:
+        obs_2, reward, done, info = env.step(action_num)
 
-    cat_pos = pos_brks[cat_pos]
-    # vel_pos = vel_brks[vel_pos]
+        agent.update_q(obs_1, obs_2[0], action_num, reward)
 
-    update_index = list()
+        obs_1 = obs_2[0]
 
-    for i in range(len(q)):
-        if q[i][0] == cat_pos and q[i][2] == action:
-            j = np.where(q[i][0] == pos_brks)[0][0]
+        action_num = agent.action(obs_1)
 
-            if j == 0:
-                next_state = pos_brks[:2]
-            elif j == (len(pos_brks) - 1):
-                next_state = pos_brks[-2:]
-            else:
-                next_state = pos_brks[(j - 1):(j + 1)]
+        agent.update_performance(reward)
 
-            max_q = np.max([j[2] for j in q if j[0] in next_state])
+env.close()
 
-            r = reward + gamma * max_q
+# visually verify
+agent.reset_episodes()
 
-            q[i][2] = r
+for i_episode in range(100):
+    agent.new_episode()
 
-            update_index.append(i)
+    obs = env.reset()
 
-    return(update_index)
+    done = False
 
-
-def get_action(position):
-    position = np.round(position, 2)
-    # velocity = np.round(velocity, 2)
-
-    cat_pos = np.digitize(position, pos_brks) - 1
-    # vel_pos = np.digitize(velocity, vel_brks) - 1
-
-    cat_pos = pos_brks[cat_pos]
-    # vel_pos = vel_brks[vel_pos]
-
-    next_actions = list()
-
-    for a_state in q:
-        if a_state[0] == cat_pos:
-            next_actions.append(a_state)
-
-    max_q = np.max([i[2] for i in next_actions])
-
-    next_actions = [i[1] for i in next_actions if i[2] == max_q]
-
-    if len(next_actions) > 1:
-        result = np.random.choice(next_actions)
-    else:
-        result = next_actions[0]
-
-    return int(result)
-
-for i_episode in range(20):
-    observation = env.reset()
-
-    position = observation[0]
-    # velocity = observation[1]
-
-    reward = 0
-    action = get_action(position)
-
-    for t in range(100):
+    while done is not True:
         env.render()
 
-        print(observation)
+        action_num = agent.action(obs[1])
 
-        observation, reward, done, info = env.step(action)
+        obs, reward, done, info = env.step(action_num)
 
-        position = observation[0]
-        # velocity = observation[1]
+        agent.update_performance(reward)
 
-        update_q(position, action, reward, gamma)
-
-        # action = env.action_space.sample()
-
-        if done:
-            print("Episode finished after {} timesteps".format(t+1))
-
-            break
-
-        action = get_action(position)
+        # time.sleep(0.15)
 
 env.close()
