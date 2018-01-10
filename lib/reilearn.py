@@ -1,5 +1,5 @@
-import numpy as np
 import copy
+import numpy as np
 
 
 class STDL(object):
@@ -54,10 +54,18 @@ class STDL(object):
 
     @property
     def lrate(self):
+        """:obj:`float`: Learning rate. Affects exploration vs. exploitation
+
+        Learning rate values must be [0, 1]
+        """
         return self._lrate
 
     @property
     def drate(self):
+        """:obj:`float`: Discount rate. Weight given to newly estimated Q-values
+
+        Discount rate values must be [0, 1]
+        """
         return self._drate
 
     @lrate.setter
@@ -73,22 +81,6 @@ class STDL(object):
             raise ValueError("drate must be between 0 and 1, inclusive")
 
         self._drate = value
-
-    @lrate.getter
-    def lrate(self):
-        """:obj:`float`: Learning rate. Affects exploration vs. exploitation
-
-        Learning rate values must be [0, 1]
-        """
-        return self._lrate
-
-    @drate.getter
-    def drate(self):
-        """:obj:`float`: Discount rate. Weight given to newly estimated Q-values
-
-        Discount rate values must be [0, 1]
-        """
-        return self._drate
 
     def _learn_q(self, obs1, obs2, action, reward):
         old_q = self.q[obs1, action]
@@ -381,3 +373,7 @@ class DiscreteParameter(object):
 
 def discretizer_equal(minimum, maximum, n):
     return np.linspace(minimum, maximum, n + 1, dtype=np.float64)
+
+def discretizer_yellow():
+    """hello
+    """
