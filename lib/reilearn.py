@@ -1,4 +1,3 @@
-import copy
 import numpy as np
 
 
@@ -46,11 +45,6 @@ class STDL(object):
         self._drate = drate
 
         self.q = np.zeros((self._nstates, self._nactions), dtype=np.float64)
-
-        self.episodes = list()
-        self.episode_i = 1
-        self.timesteps = 0
-        self.cumulative_reward = 0
 
     @property
     def lrate(self):
@@ -139,87 +133,6 @@ class STDL(object):
             action = possible_actions[0]
 
         return action
-
-    def new_episode(self):
-        """Reset internal storage for tracking timesteps and cumulative rewards
-
-        SDTL maintains the running count of the total timesteps for the
-        current episode as well as cumulative rewards received
-
-        Calling this method resets those values:
-            (episode_i = 1, timesteps = 0, cumulative reward = 0)
-        """
-        self.episodes.append((self.episode_i, self.cumulative_reward,
-                              self.timesteps))
-
-        self.episode_i += 1
-        self.timesteps = 0
-        self.cumulative_reward = 0
-
-    def update_performance(self, reward):
-        """Updates internal counter for timestep and cumulative reward
-
-        Calling this method will increment timestep by 1 and add reward to
-        the cumulative reward received for a given episode
-
-        Args:
-            reward (float): Received reward for given transition
-        """
-        self.timesteps += 1
-        self.cumulative_reward += reward
-
-    def reset_episodes(self):
-        """Reset all episode counters
-
-        Similar to new_episode method, but episode list is also reset
-        """
-        self.episode_i = 1
-        self.timesteps = 0
-        self.cumulative_reward = 0
-
-        self.episodes = list()
-
-    def top_episodes(self, n=10):
-        """Retrieve top n episodes by cumulative rewards
-
-        Args:
-            n (int): top n results to return
-
-        Returns:
-            :obj:`list` of :obj:`list`: Each internal list returns:
-                [episode index, cumulative reward, timesteps]
-        """
-        self.episodes.sort(key=lambda x: x[1], reverse=True)
-
-        if len(self.episodes) > n:
-            result = self.episodes[:n]
-        else:
-            result = copy.deepcopy(self.episodes)
-
-        self.episodes.sort(key=lambda x: x[0])
-
-        return result
-
-    def episode_performance(self):
-        """Retrieve summary statistcs for episodes
-
-        Returns:
-            :obj:`dict`: With the following key/values:
-                nepisodes (int): number of episodes
-                mean_timesteps (float): Mean timesteps
-                mean_reward (float): Mean reward across all episodes
-                lrate (float): learning rate
-                drate (float): discount rate
-        """
-        result = dict()
-        result['nepisodes'] = len(self.episodes)
-        result['mean_timesteps'] = np.mean([i[2] for i in self.episodes])
-        result['mean_reward'] = np.mean([i[1] for i in self.episodes])
-        result['std_reward'] = np.std([i[1] for i in self.episodes])
-        result['lrate'] = self._lrate
-        result['drate'] = self._drate
-
-        return result
 
 
 class SDTDL(STDL):
