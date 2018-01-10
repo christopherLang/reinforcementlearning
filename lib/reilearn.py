@@ -44,7 +44,8 @@ class STDL(object):
         self._lrate = lrate
         self._drate = drate
 
-        self.q = np.zeros((self._nstates, self._nactions), dtype=np.float64)
+        qmat_shape = (self._nstates, self._nactions)
+        self._qmat = np.zeros(qmat_shape, dtype=np.float64)
 
     @property
     def lrate(self):
@@ -62,6 +63,10 @@ class STDL(object):
         """
         return self._drate
 
+    @property
+    def qmat(self):
+        return self._qmat
+
     @lrate.setter
     def lrate(self, value):
         if value < 0 or value > 1:
@@ -77,8 +82,8 @@ class STDL(object):
         self._drate = value
 
     def _learn_q(self, obs1, obs2, action, reward):
-        old_q = self.q[obs1, action]
-        new_q = np.max(self.q[obs2, :])
+        old_q = self._qmat[obs1, action]
+        new_q = np.max(self._qmat[obs2, :])
 
         updated_old_q = old_q
         updated_old_q += self._lrate * (reward + self._drate * new_q - old_q)
@@ -107,7 +112,7 @@ class STDL(object):
             reward (float): Reward value offered for transitioning from current
                             to new next state (obs1 -> obs2)
         """
-        self.q[obs1, action] = self._learn_q(obs1, obs2, action, reward)
+        self._qmat[obs1, action] = self._learn_q(obs1, obs2, action, reward)
 
     def action(self, obs):
         """Which action to take to transition to next state
@@ -124,7 +129,8 @@ class STDL(object):
         Returns:
             (int) the next action's index value
         """
-        possible_actions = np.where(self.q[obs, :] == np.max(self.q[obs, :]))
+        possible_actions = self._qmat[obs, :] == np.max(self._qmat[obs, :])
+        possible_actions = np.where(possible_actions)
         possible_actions = possible_actions[0]
 
         if len(possible_actions) > 1:
