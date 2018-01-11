@@ -48,8 +48,15 @@ class DiscreteQLearn(object):
             drate : float (default to 0.10)
                 Discount rate. Weight given to newly estimated Q-values
         """
-        nstates = (nstates,) if isinstance(nstates, int) else tuple(nstates)
-        nactions = (nactions,) if isinstance(nactions, int) else tuple(nactions)
+        if isinstance(nstates, int):
+            nstates = (nstates,)
+        else:
+            nstates = tuple(nstates)
+
+        if isinstance(nactions, int):
+            nactions = (nactions,)
+        else:
+            nactions = tuple(nactions)
 
         self._nstates = len(nstates)
         self._nactions = len(nactions)
