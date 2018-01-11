@@ -31,18 +31,25 @@ class DiscreteQLearn(object):
     """
 
     def __init__(self, nstates, nactions, lrate=0.618, drate=0.10):
-        """Instantiate SDTL class
+        """Construct DiscreteQLearn object
 
         Args:
-            nstates (int): Number of distinct states
-            nactions (int): Number of distinct actions
-            lrate (int): Learning rate. Affects exploration vs. exploitation.
-                         Defaults to 0.618
-            drate (int): Discount rate. Weight given to new Q-values. Defaults
-                         to 0.10
+            nstates : int, iterable of int, (required)
+                Specifies the dimension of states and possible values.
+                If `int` is provided, it is assumed to be a 1D state with
+                `nstates` possible states. If a `tuple` of `int` is provided,
+                the length of the tuple` specifies the number of dimensions
+                there is, and the integers specify the number of states per
+                dimension
+            nactions : int, iterable of int, (required)
+                Similar to `nstates`, but for actions
+            lrate : float, (default to 0.618)
+                Learning rate. Affects exploration vs. exploitation
+            drate : float (default to 0.10)
+                Discount rate. Weight given to newly estimated Q-values
         """
-        nstates = (nstates,) if isinstance(nstates, int) else nstates
-        nactions = (nactions,) if isinstance(nactions, int) else nactions
+        nstates = (nstates,) if isinstance(nstates, int) else tuple(nstates)
+        nactions = (nactions,) if isinstance(nactions, int) else tuple(nactions)
 
         self._nstates = len(nstates)
         self._nactions = len(nactions)
