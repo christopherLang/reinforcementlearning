@@ -181,8 +181,9 @@ class DiscreteQLearn(object):
                 equal the dimension of the state
 
         Returns:
-            int, tuple of int
-                The next action's index value
+            int or tuple of int
+                The next action's index value. Will only return a `int` if the
+                action is 1-dimensional. Otherwise, a `tuple` of `int`
         """
         possible_actions = self._qmat[obs] == np.max(self._qmat[obs])
         possible_actions = np.where(possible_actions)
@@ -194,6 +195,9 @@ class DiscreteQLearn(object):
             action = tuple(possible_actions[action].tolist())
         else:
             action = tuple(possible_actions[0])
+
+        if len(action) < 2:
+            action = action[0]
 
         return action
 
