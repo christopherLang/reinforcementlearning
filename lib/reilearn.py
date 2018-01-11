@@ -2,6 +2,34 @@ import numpy as np
 
 
 class DiscreteQLearn(object):
+    """Simple Temporal Difference Learning Algorithm
+
+    This reinforcement learning algorithm permits a simple discrete state(s),
+    discrete action(s) learning algorithm using Bellman's equation to update
+    the Q-values
+
+    Internally, the Q matrix is a numpy.ndarray, with the first n-dimensions
+    representing the states, and the second m-dimensions representing actions.
+    Hence this class supports multidimensional states and actions
+
+    Please see docstring for method update_q for the formula used to estimate
+    new Q-values
+
+    Attributes:
+        lrate : float
+            Learning rate. Affects exploration vs. exploitation
+        drate : float
+            Discount rate. Weight given to newly estimated Q-values
+        nstates : int
+            Number of discrete states available
+        nactions : int
+            Number of descrete actions available
+        qmatshape : tuple of int
+            The shape of `qmat`, the Q-Matrix
+        qmat : numpy.ndarray
+            The Q-matrix, a `numpy.ndarray` storing the Q-values
+    """
+
     def __init__(self, nstates, nactions, lrate=0.618, drate=0.10):
         """Instantiate SDTL class
 
@@ -16,8 +44,8 @@ class DiscreteQLearn(object):
         nstates = (nstates,) if isinstance(nstates, int) else nstates
         nactions = (nactions,) if isinstance(nactions, int) else nactions
 
-        self._nstates = nstates
-        self._nactions = nactions
+        self._nstates = len(nstates)
+        self._nactions = len(nactions)
         self._lrate = lrate
         self._drate = drate
 
@@ -40,6 +68,16 @@ class DiscreteQLearn(object):
         Discount rate values must be [0, 1]
         """
         return self._drate
+
+    @property
+    def nstates(self):
+        """(int) Number of states"""
+        return self._nstates
+
+    @property
+    def nactions(self):
+        """(int) Number of actions"""
+        return self._nactions
 
     @property
     def qmatshape(self):
