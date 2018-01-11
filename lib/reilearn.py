@@ -142,11 +142,18 @@ class DiscreteQLearn(object):
         reward : reward value
 
         Args:
-            obs1 (int): Current state's index
-            obs2 (int): Next state's index
-            action (int): Taken action's index
-            reward (float): Reward value offered for transitioning from current
-                            to new next state (obs1 -> obs2)
+            obs1 : int, iterable of int, (required)
+                The current state's index. If `int`, than the value itself is
+                the index for 1-dimension. If `tuple`, than values inside is
+                the indices for the corresponding dimension. The length should
+                equal the dimension of the state
+            obs2 : int, iterable of int, (required)
+                The next state's index. Structure is the same as `obs1`
+            action : int, iterable of int, (required)
+                The action's (taken to transition from `obs1` to `obs2`) index.
+                Structure is the same as `obs1`, but for actions
+            reward : float
+                The reward value for transitioning from `obs1` to `obs2`
         """
         obs1 = (obs1,) if isinstance(obs1, int) else obs1
         obs2 = (obs2,) if isinstance(obs2, int) else obs2
