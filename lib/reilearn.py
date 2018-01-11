@@ -162,6 +162,21 @@ class DiscreteQLearn(object):
         obs2 = (obs2,) if isinstance(obs2, int) else obs2
         action = (action,) if isinstance(action, int) else action
 
+        if len(obs1) != self._nstates:
+            msg = 'dimension of `obs1` ({0}) should equal {1}'
+            msg = msg.format(len(obs1), self._nstates)
+            raise ValueError(msg)
+
+        if len(obs2) != self._nstates:
+            msg = 'dimension of `obs2` ({0}) should equal {1}'
+            msg = msg.format(len(obs2), self._nstates)
+            raise ValueError(msg)
+
+        if len(action) != self._nactions:
+            msg = 'dimension of `action` ({0}) should equal {1}'
+            msg = msg.format(len(action), self._nactions)
+            raise ValueError(msg)
+
         self._qmat[obs1 + action] = self._learn_q(obs1, obs2, action, reward)
 
     def action(self, obs):
@@ -185,6 +200,13 @@ class DiscreteQLearn(object):
                 The next action's index value. Will only return a `int` if the
                 action is 1-dimensional. Otherwise, a `tuple` of `int`
         """
+        obs = (obs,) if isinstance(obs, int) else obs
+
+        if len(obs) != self._nstates:
+            msg = 'dimension of `obs` ({0}) should equal {1}'
+            msg = msg.format(len(obs), self._nstates)
+            raise ValueError(msg)
+
         possible_actions = self._qmat[obs] == np.max(self._qmat[obs])
         possible_actions = np.where(possible_actions)
 
