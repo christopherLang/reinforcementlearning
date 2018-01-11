@@ -154,6 +154,9 @@ class DiscreteQLearn(object):
                 Structure is the same as `obs1`, but for actions
             reward : float
                 The reward value for transitioning from `obs1` to `obs2`
+
+        Returns:
+            No return value
         """
         obs1 = (obs1,) if isinstance(obs1, int) else obs1
         obs2 = (obs2,) if isinstance(obs2, int) else obs2
@@ -165,16 +168,21 @@ class DiscreteQLearn(object):
         """Which action to take to transition to next state
 
         For selecting the next action, SDTL observes the Q-values for all
-        actions for the current state (obs1) and selects the action with the
+        actions for the current state (`obs`) and selects the action with the
         largest Q-value
 
         If multiple actions are found, they are randomly sampled
 
         Args:
-            obs (int): The current state's index value
+            obs1 : int, iterable of int, (required)
+                The current state's index. If `int`, than the value itself is
+                the index for 1-dimension. If `tuple`, than values inside is
+                the indices for the corresponding dimension. The length should
+                equal the dimension of the state
 
         Returns:
-            (int) the next action's index value
+            int, tuple of int
+                The next action's index value
         """
         possible_actions = self._qmat[obs] == np.max(self._qmat[obs])
         possible_actions = np.where(possible_actions)
