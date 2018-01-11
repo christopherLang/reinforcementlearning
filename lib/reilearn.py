@@ -1,6 +1,136 @@
 import numpy as np
 
 
+class DiscreteQLearn(object):
+    def __init__(self, nstates, nactions, lrate=0.618, drate=0.10):
+        """Instantiate SDTL class
+
+        Args:
+            nstates (int): Number of distinct states
+            nactions (int): Number of distinct actions
+            lrate (int): Learning rate. Affects exploration vs. exploitation.
+                         Defaults to 0.618
+            drate (int): Discount rate. Weight given to new Q-values. Defaults
+                         to 0.10
+        """
+        nstates = (nstates,) if isinstance(nstates, int) else nstates
+        nactions = (nactions,) if isinstance(nactions, int) else nactions
+
+        self._nstates = nstates
+        self._nactions = nactions
+        self._lrate = lrate
+        self._drate = drate
+
+        qmat_shape = self._nstates + self._nactions
+        self._qmat = np.zeros(qmat_shape, dtype=np.float64)
+        self._qmatshape = self._qmat.shape
+
+    @property
+    def lrate(self):
+        """(float) Learning rate. Affects exploration vs. exploitation
+
+        Learning rate values must be [0, 1]
+        """
+        return self._lrate
+
+    @property
+    def drate(self):
+        """(float) Discount rate. Weight given to newly estimated Q-values
+
+        Discount rate values must be [0, 1]
+        """
+        return self._drate
+
+    @property
+    def qmatshape(self):
+        """(tuple of int) The shape of the Q-matrix"""
+        return self._qmatshape
+
+    @property
+    def qmat(self):
+        """(numpy.ndarray) The Q-matrix"""
+        return self._qmat
+
+    @lrate.setter
+    def lrate(self, value):
+        if value < 0 or value > 1:
+            raise ValueError("lrate must be between 0 and 1, inclusive")
+
+        self._lrate = value
+
+    @drate.setter
+    def drate(self, value):
+        if value < 0 or value > 1:
+            raise ValueError("drate must be between 0 and 1, inclusive")
+
+        self._drate = value
+
+    def _learn_q(self, obs1, obs2, action, reward):
+        old_q = self._qmat[obs1 + action]
+        new_q = np.max(self._qmat[obs2])
+
+        updated_old_q = old_q
+        updated_old_q += self._lrate * (reward + self._drate * new_q - old_q)
+
+        return updated_old_q
+
+    def update_q(self, obs1, obs2, action, reward):
+        """Update internal Q matrix with new Q-values
+
+        For current state, a new Q-value is computed using the bellman's
+        equation. The formula is:
+
+        Q_1 = Q_1 + lrate * (reward + drate * Q_2 - Q_1)
+
+        where...
+        Q_1 : old Q-value for current state (obs1)
+        Q_2 : new Q-value for next state (obs2)
+        lrate : Learning rate
+        drate : Discount rate
+        reward : reward value
+
+        Args:
+            obs1 (int): Current state's index
+            obs2 (int): Next state's index
+            action (int): Taken action's index
+            reward (float): Reward value offered for transitioning from current
+                            to new next state (obs1 -> obs2)
+        """
+        obs1 = (obs1,) if isinstance(obs1, int) else obs1
+        obs2 = (obs2,) if isinstance(obs2, int) else obs2
+        action = (action,) if isinstance(action, int) else action
+
+        self._qmat[obs1 + action] = self._learn_q(obs1, obs2, action, reward)
+
+    def action(self, obs):
+        """Which action to take to transition to next state
+
+        For selecting the next action, SDTL observes the Q-values for all
+        actions for the current state (obs1) and selects the action with the
+        largest Q-value
+
+        If multiple actions are found, they are randomly sampled
+
+        Args:
+            obs (int): The current state's index value
+
+        Returns:
+            (int) the next action's index value
+        """
+        possible_actions = self._qmat[obs] == np.max(self._qmat[obs])
+        possible_actions = np.where(possible_actions)
+
+        possible_actions = np.stack(possible_actions).T
+
+        if len(possible_actions) > 1:
+            action = np.random.choice(np.arange(len(possible_actions)))
+            action = tuple(possible_actions[action].tolist())
+        else:
+            action = tuple(possible_actions[0])
+
+        return action
+
+
 class STDL(object):
     """Simple Temporal Difference Learning Algorithm
 
