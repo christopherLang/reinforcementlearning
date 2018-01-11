@@ -85,12 +85,12 @@ class DiscreteQLearn(object):
 
     @property
     def nstates(self):
-        """(int) Number of states"""
+        """(int) Count of dimensions of states"""
         return self._nstates
 
     @property
     def nactions(self):
-        """(int) Number of actions"""
+        """(int) Count of dimensions of actions"""
         return self._nactions
 
     @property
